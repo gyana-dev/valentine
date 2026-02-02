@@ -9,89 +9,62 @@
 
 <style>
 :root {
-  --bg1: #ffd6e7;
-  --bg2: #ffeef6;
-  --card: #ffffffcc;
-  --yes: #ff3b7a;
-  --yesHover: #ff1f68;
+  --bg1:#ffd6e7;
+  --bg2:#ffeef6;
+  --card:#ffffffcc;
+  --yes:#ff3b7a;
 }
 
-* { box-sizing: border-box; }
+*{box-sizing:border-box}
 
-body {
-  margin: 0;
-  min-height: 100svh;
-  display: grid;
-  place-items: center;
-  background: radial-gradient(circle at top, var(--bg2), var(--bg1));
-  font-family: system-ui, sans-serif;
-  overflow: hidden;
-  padding: 16px;
+body{
+  margin:0;
+  min-height:100svh;
+  display:grid;
+  place-items:center;
+  background:radial-gradient(circle at top,var(--bg2),var(--bg1));
+  font-family:system-ui,sans-serif;
+  overflow:hidden;
+  padding:16px;
 }
 
-#confettiCanvas {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: 9999;
+.card{
+  width:min(720px,92vw);
+  padding:26px 22px;
+  background:var(--card);
+  backdrop-filter:blur(10px);
+  border-radius:22px;
+  text-align:center;
+  box-shadow:0 18px 60px rgba(0,0,0,.15);
 }
 
-.card {
-  width: min(720px, 92vw);
-  padding: 26px 22px;
-  background: var(--card);
-  backdrop-filter: blur(10px);
-  border-radius: 22px;
-  text-align: center;
-  box-shadow: 0 18px 60px rgba(0,0,0,.15);
+h1{font-size:clamp(26px,4vw,44px);margin:12px 0 18px}
+
+.button-zone{
+  position:relative;
+  width:min(520px,92%);
+  height:160px;
+  margin:0 auto;
+  touch-action:none;
 }
 
-.art {
-  width: min(260px, 80vw);
-  margin: 0 auto 10px;
-  display: block;
+button{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  padding:16px 26px;
+  font-size:18px;
+  font-weight:800;
+  border-radius:999px;
+  border:none;
+  cursor:pointer;
 }
 
-h1 {
-  font-size: clamp(26px, 4vw, 44px);
-  margin: 12px 0 18px;
-}
+#yesBtn{left:18%;background:var(--yes);color:#fff}
+#noBtn{left:62%;background:#e5e7eb}
 
-.button-zone {
-  position: relative;
-  width: min(520px, 92%);
-  height: 150px;
-  margin: 0 auto;
-  touch-action: none;
-}
-
-button {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  padding: 16px 24px;
-  font-size: 18px;
-  font-weight: 800;
-  border-radius: 999px;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 10px 24px rgba(0,0,0,.14);
-  transition: transform .12s ease, background .12s ease;
-}
-
-#yesBtn {
-  left: 18%;
-  background: var(--yes);
-  color: #fff;
-}
-
-#noBtn {
-  left: 62%;
-  background: #e5e7eb;
-}
-.result { display: none; margin-top: 18px; }
+.result{display:none;margin-top:20px}
+canvas{position:fixed;inset:0;pointer-events:none}
 </style>
 </head>
 
@@ -108,64 +81,52 @@ button {
 
 <div class="result" id="result">
   <h2>YAY! 🎉</h2>
-  <img src="https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif" width="300"/>
+  <img src="https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif" width="300">
 </div>
 </main>
 
 <script>
-const girlName = "Sonali";
-document.getElementById("mainQuestion").textContent =
-  girlName + ", will you be my valentine?";
+const girlName="Sonali";
+document.getElementById("mainQuestion").textContent=
+girlName+", will you be my valentine?";
 
-const zone = document.getElementById("zone");
-const yesBtn = document.getElementById("yesBtn");
-const noBtn = document.getElementById("noBtn");
-const result = document.getElementById("result");
+const zone=document.getElementById("zone");
+const noBtn=document.getElementById("noBtn");
+const yesBtn=document.getElementById("yesBtn");
+const result=document.getElementById("result");
 
-let zoneRect = zone.getBoundingClientRect();
-window.addEventListener("resize", () => zoneRect = zone.getBoundingClientRect());
+let zoneRect=zone.getBoundingClientRect();
+window.addEventListener("resize",()=>zoneRect=zone.getBoundingClientRect());
 
-const confettiCanvas = document.getElementById("confettiCanvas");
-const confettiInstance = confetti.create(confettiCanvas, { resize: true, useWorker: true });
+function clamp(n,min,max){return Math.max(min,Math.min(max,n));}
 
-function fullScreenConfetti() {
-  confettiInstance({
-    particleCount: 180,
-    spread: 120,
-    startVelocity: 50,
-    ticks: 200,
-    origin: { x: 0.5, y: 0.6 }
-  });
-}
-
-function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
-
-function moveNo(px, py) {
-  const b = noBtn.getBoundingClientRect();
-  let dx = (b.left + b.width/2) - px;
-  let dy = (b.top + b.height/2) - py;
-  let mag = Math.hypot(dx, dy) || 1;
+function moveNo(x,y){
+  const b=noBtn.getBoundingClientRect();
+  let dx=(b.left+b.width/2)-x;
+  let dy=(b.top+b.height/2)-y;
+  let mag=Math.hypot(dx,dy)||1;
   dx/=mag; dy/=mag;
 
-  let newLeft = (b.left - zoneRect.left) + dx*140;
-  let newTop  = (b.top - zoneRect.top) + dy*140;
+  let newLeft=(b.left-zoneRect.left)+dx*160;
+  let newTop=(b.top-zoneRect.top)+dy*160;
 
-  newLeft = clamp(newLeft, 0, zoneRect.width - b.width);
-  newTop  = clamp(newTop, 0, zoneRect.height - b.height);
+  newLeft=clamp(newLeft,0,zoneRect.width-b.width);
+  newTop=clamp(newTop,0,zoneRect.height-b.height);
 
-  noBtn.style.left = newLeft + "px";
-  noBtn.style.top  = newTop + "px";
-  noBtn.style.transform = "none";
+  noBtn.style.left=newLeft+"px";
+  noBtn.style.top=newTop+"px";
+  noBtn.style.transform="none";
 }
 
 function handleMove(x,y){
-  const b = noBtn.getBoundingClientRect();
-  const d = Math.hypot((b.left+b.width/2)-x,(b.top+b.height/2)-y);
-  if(d<140) moveNo(x,y);
+  const b=noBtn.getBoundingClientRect();
+  const dist=Math.hypot((b.left+b.width/2)-x,(b.top+b.height/2)-y);
+  if(dist<150) moveNo(x,y);
 }
 
-zone.addEventListener("pointermove", e=>handleMove(e.clientX,e.clientY));
-zone.addEventListener("touchmove", e=>{
+zone.addEventListener("pointermove",e=>handleMove(e.clientX,e.clientY));
+
+zone.addEventListener("touchmove",e=>{
   const t=e.touches[0];
   handleMove(t.clientX,t.clientY);
 },{passive:true});
@@ -173,7 +134,9 @@ zone.addEventListener("touchmove", e=>{
 yesBtn.addEventListener("click",()=>{
   zone.style.display="none";
   result.style.display="block";
-  fullScreenConfetti();
+
+  const confettiInstance=confetti.create(document.getElementById("confettiCanvas"),{resize:true});
+  confettiInstance({particleCount:180,spread:120,origin:{x:0.5,y:0.6}});
 });
 </script>
 </body>
